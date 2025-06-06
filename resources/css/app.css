@@ -1,0 +1,30 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "perfect-scrollbar/css/perfect-scrollbar.css";
+@import "tailwindcss/utilities";
+
+
+.dark .ps__rail-y,
+.dark .ps__rail-x {
+    background-color: transparent !important;
+}
+
+.dataTables_filter input {
+    @apply border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm focus:outline-none outline-none;
+}
+
+.dataTables_length select {
+    @apply border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 text-sm;
+}
+
+.dataTables_paginate .paginate_button {
+    @apply border border-gray-300 dark:border-gray-600 px-2 py-1 mx-1 text-sm rounded-md;
+}
+
+.dataTables_paginate .paginate_button.current {
+    @apply bg-blue-500 text-white;
+}
+
+.dataTables_info {
+    @apply text-sm text-gray-600 dark:text-gray-300;
+}
