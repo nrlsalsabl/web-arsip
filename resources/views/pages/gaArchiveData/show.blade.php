@@ -1,118 +1,55 @@
 <x-app-layout>
     <x-slot name="header">
-        {{-- Header bisa ditambahkan di sini --}}
+        {{-- Header opsional --}}
     </x-slot>
 
-    <x-breadcrumb title="Update Data Arsip" :items="[
+    <x-breadcrumb title="Detail Arsip" :items="[
         ['label' => 'Arsip', 'url' => route('ga-archive.index')],
-        ['label' => 'Update Data']
+        ['label' => 'Detail Arsip']
     ]" />
 
     <div class="space-y-6">
-        <div class="p-0 sm:p-8 sm:pb-12 bg-white shadow sm:rounded-lg dark:bg-gray-800">
-            <form enctype="multipart/form-data" action="{{ route('ga-archive.update',$gaArchiveData->id) }}" method="POST" class="px-2 py-2">
-                @csrf
-                @method('PUT')
-                @php
-                    $oldOrData = fn($field) => old($field, $gaArchiveData->$field ?? '');
-                @endphp
+        <div class="p-6 bg-white shadow sm:rounded-lg dark:bg-gray-800">
+            <h2 class="text-xl font-bold mb-4">Informasi Arsip</h2>
 
-                <div class="grid grid-cols-1 md:grid-cols-1 gap-5">
-                    
-                    {{-- No --}}
-                    <div class="w-full">
-                        <x-form.label for="no" class="font-semibold py-1">No</x-form.label>
-                        <x-form.input 
-                            value="{{ $oldOrData('no') }}" 
-                            type="text" name="no" id="no" placeholder="Masukkan No (opsional)" 
-                            class="w-full {{ inputBgClass($oldOrData('no')) }}" />
-                        <x-form.error :messages="$errors->get('no')" />
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-800 dark:text-gray-200">
+                <div><strong>No:</strong> {{ $gaArchiveData->no ?? '-' }}</div>
+                <div><strong>Filling Number:</strong> {{ $gaArchiveData->filling_number }}</div>
+                <div><strong>Cabinet Number:</strong> {{ $gaArchiveData->cabinet_number }}</div>
+                <div><strong>Nama Dokumen:</strong> {{ $gaArchiveData->document_name }}</div>
+                <div><strong>Tanggal:</strong> {{ \Carbon\Carbon::parse($gaArchiveData->date)->format('d-m-Y') }}</div>
+                <div><strong>Kategori:</strong> {{ $gaArchiveData->category }}</div>
+                <div><strong>Jumlah Akses:</strong> {{ $gaArchiveData->access_count ?? 0 }}</div>
+            </div>
 
-                    {{-- Filling Number --}}
-                    <div class="w-full">
-                        <x-form.label for="filling_number" class="font-semibold py-1">Filling Number</x-form.label>
-                        <x-form.input 
-                            value="{{ $oldOrData('filling_number') }}" 
-                            type="text" name="filling_number" id="filling_number" 
-                            placeholder="Masukkan Filling Number" 
-                            class="w-full {{ inputBgClass($oldOrData('filling_number')) }}" />
-                        <x-form.error :messages="$errors->get('filling_number')" />
-                    </div>
+            <div class="mt-6">
+                <h3 class="font-semibold text-lg mb-2">File Dokumen:</h3>
+                @if($gaArchiveData->document_file)
+                    <a href="{{ asset('storage/'.$gaArchiveData->document_file) }}" target="_blank" class="text-blue-500 hover:underline">
+                        Lihat / Unduh File
+                    </a>
+                @else
+                    <p class="text-red-500">Tidak ada file terlampir.</p>
+                @endif
+            </div>
 
-                    {{-- Cabinet Number --}}
-                    <div class="w-full">
-                        <x-form.label for="cabinet_number" class="font-semibold py-1">Cabinet Number</x-form.label>
-                        <x-form.input 
-                            value="{{ $oldOrData('cabinet_number') }}" 
-                            type="text" name="cabinet_number" id="cabinet_number" 
-                            placeholder="Masukkan Cabinet Number" 
-                            class="w-full {{ inputBgClass($oldOrData('cabinet_number')) }}" />
-                        <x-form.error :messages="$errors->get('cabinet_number')" />
-                    </div>
+            <div class="mt-6">
+                <h3 class="font-semibold text-lg mb-2">QR Code:</h3>
+                @if($gaArchiveData->is_generate_qrcode && $gaArchiveData->unique_id !== '0')
+                    <img src="{{ route('ga-archive.qrcode', $gaArchiveData->id) }}" alt="QR Code" width="200" height="200">
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        Arahkan kamera untuk mengakses halaman ini.
+                    </p>
+                @else
+                    <p class="text-red-500">QR Code belum digenerate untuk arsip ini.</p>
+                @endif
+            </div>
 
-                    {{-- Document Name --}}
-                    <div class="w-full">
-                        <x-form.label for="document_name" class="font-semibold py-1">Nama Dokumen</x-form.label>
-                        <x-form.input 
-                            value="{{ $oldOrData('document_name') }}" 
-                            type="text" name="document_name" id="document_name" 
-                            placeholder="Masukkan Nama Dokumen" 
-                            class="w-full {{ inputBgClass($oldOrData('document_name')) }}" />
-                        <x-form.error :messages="$errors->get('document_name')" />
-                    </div>
-
-                    {{-- Date --}}
-                    <div class="w-full">
-                        <x-form.label for="date" class="font-semibold py-1">Tanggal Dokumen</x-form.label>
-                        <x-form.input 
-                            value="{{ $oldOrData('date') }}" 
-                            type="date" name="date" id="date" 
-                            class="w-full {{ inputBgClass($oldOrData('date')) }}" />
-                        <x-form.error :messages="$errors->get('date')" />
-                    </div>
-
-                    {{-- Category --}}
-                    <div class="w-full">
-                        <x-form.label for="category" class="font-semibold py-1">Kategori</x-form.label>
-                        <x-form.input 
-                            value="{{ $oldOrData('category') }}" 
-                            type="text" name="category" id="category" 
-                            placeholder="Contoh: Surat, Kontrak" 
-                            class="w-full {{ inputBgClass($oldOrData('category')) }}" />
-                        <x-form.error :messages="$errors->get('category')" />
-                    </div>
-
-                    {{-- Generate QR Code --}}
-                    <div class="w-full">
-                        <x-form.label for="is_generate_qrcode" class="font-semibold py-1">Generate QR Code</x-form.label>
-                        <input type="hidden" name="is_generate_qrcode" value="0">
-                        <input 
-                            type="checkbox" name="is_generate_qrcode" id="is_generate_qrcode" 
-                            value="1" 
-                            class="w-5 h-7" 
-                            {{ old('is_generate_qrcode', $gaArchiveData->is_generate_qrcode ?? false) ? 'checked' : '' }} />
-                        <x-form.error :messages="$errors->get('is_generate_qrcode')" />
-                    </div>
-
-                    {{-- Document File --}}
-                    <div class="w-full">
-                        <x-form.label for="document_file" class="font-semibold py-1">File Dokumen</x-form.label>
-                        <x-form.input 
-                            type="file" name="document_file" id="document_file" 
-                            class="w-full {{ inputBgClass('') }}" />
-                        <x-form.error :messages="$errors->get('document_file')" />
-                    </div>
-                    @if (isset($gaArchiveData->document_file))
-                    <div>
-                        <x-button href="{{ asset('storage/'.$gaArchiveData->document_file) }}" variant="primary" size="lg" class="items-center max-w-xs gap-2">
-                            <span>Lihat File</span>
-                        </x-button>
-                    </div>
-                    @endif
-
-                </div>
-            </form>
+            <div class="mt-6">
+                <x-button href="{{ route('ga-archive.index') }}" variant="secondary">
+                    Kembali ke Daftar Arsip
+                </x-button>
+            </div>
         </div>
     </div>
 </x-app-layout>

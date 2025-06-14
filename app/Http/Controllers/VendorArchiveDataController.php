@@ -6,7 +6,10 @@ use App\Models\VendorArchiveData;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use RealRashid\SweetAlert\Facades\Alert;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Writer;
 use Illuminate\Support\Str;
 
 class VendorArchiveDataController extends Controller
@@ -20,7 +23,7 @@ class VendorArchiveDataController extends Controller
         return view('pages.vendorArchive.index', compact('archives'));
     }
 
-    
+
 
     /**
      * Show the form for creating a new resource.
@@ -34,7 +37,7 @@ class VendorArchiveDataController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {   
+    {
         // $request->validate([
         //     'filling_number' => 'required',
         //     'cabinet_number' => 'required',
@@ -46,11 +49,11 @@ class VendorArchiveDataController extends Controller
         //     'file_document' => 'required',
         // ]);
 
-        
+
         try {
 
             $is_generate = $request->is_generate_qrcode !== '0' ? true : false;
-            
+
             $data = [
                 'no' => $request->no,
                 'filling_number' => $request->filling_number,
@@ -62,7 +65,7 @@ class VendorArchiveDataController extends Controller
                 'unique_id' => $is_generate ?  uniqid('vendor_archive_') : '0',
             ];
 
-            
+
             if ($request->hasFile('document_file')) {
                 $file = $request->file('document_file');
                 $fileName = time() . '_' . $file->getClientOriginalName();
@@ -83,10 +86,18 @@ class VendorArchiveDataController extends Controller
         }
     }
 
+    public function scan($unique_id)
+    {
+        $vendorArchiveData = VendorArchiveData::where('unique_id', $unique_id)->firstOrFail();
+        return view('pages.vendorArchive.show', compact('vendorArchiveData'));
+    }
+
+
     /**
      * Display the specified resource.
      */
-    public function show($id){
+    public function show($id)
+    {
         $vendorArchiveData = VendorArchiveData::find($id);
         return view('pages.vendorArchive.show', compact('vendorArchiveData'));
     }
@@ -94,41 +105,43 @@ class VendorArchiveDataController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(VendorArchiveData $vendorArchiveData,$id)
-    {   
+    public function edit(VendorArchiveData $vendorArchiveData, $id)
+    {
         $vendorArchiveData = VendorArchiveData::find($id);
         return view('pages.vendorArchive.edit', compact('vendorArchiveData'));
     }
 
     public function qrcode($id)
-    {   
-    
-        $vendorArchiveData = VendorArchiveData::find($id);
-    
-        if (!$vendorArchiveData) {
-            return abort(404, 'Data not found');
-        }
-    
+    {
+        $vendorArchiveData = VendorArchiveData::findOrFail($id);
+
         $unique_id = $vendorArchiveData->unique_id;
-    
-        if ($unique_id) {
-            // Gunakan backend default tanpa imagick (format PNG langsung dari GD)
-            $qrImage = QrCode::format('png')->size(300)->generate($unique_id);
-    
-            return response($qrImage)
-                ->header('Content-Type', 'image/png')
-                ->header('Content-Disposition', 'attachment; filename="qrcode_' . Str::slug($unique_id) . '.png"');
+
+        if (!$unique_id || $unique_id === '0') {
+            abort(404, 'QR tidak tersedia.');
         }
-    
-        Alert::error('Error','Data Tidak Di Temukan');
-        return redirect()->back();
+
+        // Buat URL untuk QR code
+        $url = route('vendor-archive.scan', $unique_id);
+
+        // Pakai SVG agar ringan dan tidak butuh imagick
+        $renderer = new ImageRenderer(
+            new RendererStyle(300),
+            new SvgImageBackEnd()
+        );
+
+        $writer = new Writer($renderer);
+        $qrCodeSvg = $writer->writeString($url);
+
+        return response($qrCodeSvg)
+            ->header('Content-Type', 'image/svg+xml');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, VendorArchiveData $vendorArchiveData,$id)
-    {   
+    public function update(Request $request, VendorArchiveData $vendorArchiveData, $id)
+    {
         $vendorArchiveData = VendorArchiveData::find($id);
         $request->validate([
             'filling_number' => 'required',
@@ -161,8 +174,8 @@ class VendorArchiveDataController extends Controller
                 $data['file_document'] = $fileName;
             }
 
-            
-            
+
+
             $vendorArchiveData->update($data);
 
 

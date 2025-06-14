@@ -50,6 +50,9 @@
                                 Jenis Sertfikat
                             </th>
                             <th scope="col" class="px-6 py-3">
+                                Tanggal Berlaku
+                            </th>
+                            <th scope="col" class="px-6 py-3">
                                 Action
                             </th>
                         </tr>
@@ -77,6 +80,9 @@
                             </td>
                             <td class="px-6 py-4">
                                 {{ $item->jenis_sertifikat }}
+                            </td>
+                            <td class="px-6 py-4">
+                                {{ $item->tanggal_berlaku }}
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex gap-1">

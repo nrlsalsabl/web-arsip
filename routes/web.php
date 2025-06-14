@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BejanaTekanController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GaArchiveDataController;
 use App\Http\Controllers\GensetController;
 use App\Http\Controllers\InstalasiHydrantController;
@@ -31,10 +32,9 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// Dashboard Route
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 // Authenticated Routes Group
 Route::middleware('auth')->group(function () {
@@ -73,13 +73,15 @@ Route::middleware('auth')->group(function () {
     // Other Resources and Routes
     Route::resource('lain-lain', LainLainController::class);
     Route::resource('ga-archive', GaArchiveDataController::class);
-    Route::get('ga-archive/qrcode/{id}', [GaArchiveDataController::class, 'qrcode'])->name('ga-archive.qrcode');
-    // Tampilkan data berdasarkan unique_id dari QR code
-    Route::get('/ga-archive/view/{unique_id}', [GaArchiveDataController::class, 'viewQr'])->name('ga-archive.view');
+    Route::get('/ga-archive/qrcode/{id}', [GaArchiveDataController::class, 'qrcode'])->name('ga-archive.qrcode');
+    Route::get('/scan-archive/{unique_id}', [GaArchiveDataController::class, 'scan'])->name('ga-archive.scan');
 
 
     Route::resource('vendor-archive', VendorArchiveDataController::class);
-    Route::get('vendor-archive/qrcode/{id}', [VendorArchiveDataController::class, 'qrcode'])->name('vendor-archive.qrcode');
+    // Route untuk QR scan
+    Route::get('/scan-vendor-archive/{unique_id}', [VendorArchiveDataController::class, 'scan'])->name('vendor-archive.scan');
+    // Route untuk QR image
+    Route::get('/vendor-archive/qrcode/{id}', [VendorArchiveDataController::class, 'qrcode'])->name('vendor-archive.qrcode');
 
     Route::resource('vendor-form', VendorFormController::class);
     Route::get('vendor-form/{id}/cetak', [VendorFormController::class, 'cetak'])->name('vendor-form.cetak');

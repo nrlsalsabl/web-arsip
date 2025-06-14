@@ -5,7 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\GaArchiveData;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Writer;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Str;
 
 class GaArchiveDataController extends Controller
@@ -33,11 +37,11 @@ class GaArchiveDataController extends Controller
             'is_generate_qrcode' => 'nullable',
         ]);
 
-        $is_generate = $request->is_generate_qrcode == "on" ? true : false;
+        $is_generate = $request->is_generate_qrcode == "on";
 
         try {
             $file = $request->file('document_file');
-            $fileName = 'documents/'.time() . '_' . $file->getClientOriginalName();
+            $fileName = 'documents/' . time() . '_' . $file->getClientOriginalName();
             $file->storeAs('documents', $fileName, 'public');
 
             GaArchiveData::create([
@@ -49,7 +53,7 @@ class GaArchiveDataController extends Controller
                 'date' => $request->date,
                 'category' => $request->category,
                 'is_generate_qrcode' => $is_generate,
-                'unique_id' => $is_generate ?  uniqid('archive_') : '0',
+                'unique_id' => $is_generate ? uniqid('archive_') : '0',
             ]);
 
             Alert::success('Berhasil', 'Data arsip berhasil disimpan');
@@ -60,42 +64,60 @@ class GaArchiveDataController extends Controller
         }
     }
 
-    public function edit(GaArchiveData $gaArchiveData,$id)
-    {   
+    public function qrcode($id)
+    {
+        $gaArchiveData = GaArchiveData::find($id);
+
+        if (!$gaArchiveData || !$gaArchiveData->unique_id) {
+            abort(404, 'Data tidak ditemukan');
+        }
+
+        // Buat URL tujuan QR Code
+        $url = route('ga-archive.scan', $gaArchiveData->unique_id);
+
+        // Gunakan SVG agar tidak tergantung imagick
+        $renderer = new ImageRenderer(
+            new RendererStyle(300),
+            new SvgImageBackEnd()
+        );
+
+        $writer = new Writer($renderer);
+        $qrCodeSvg = $writer->writeString($url);
+
+        return response($qrCodeSvg)
+            ->header('Content-Type', 'image/svg+xml');
+    }
+
+    public function scan($unique_id)
+    {
+        $gaArchiveData = GaArchiveData::where('unique_id', $unique_id)->first();
+
+        if (!$gaArchiveData) {
+            return abort(404, 'Arsip tidak ditemukan');
+        }
+
+        $gaArchiveData->increment('access_count');
+
+        return view('pages.gaArchiveData.show', compact('gaArchiveData'));
+    }
+
+    public function show($id)
+    {
+        $gaArchiveData = GaArchiveData::findOrFail($id);
+        $gaArchiveData->increment('access_count');
+        return view('pages.gaArchiveData.show', compact('gaArchiveData'));
+    }
+
+    public function edit(GaArchiveData $gaArchiveData, $id)
+    {
         $gaArchiveData = GaArchiveData::find($id);
         return view('pages.gaArchiveData.edit', compact('gaArchiveData'));
     }
 
-    public function show($id){
-        $gaArchiveData = GaArchiveData::find($id);
-        return view('pages.gaArchiveData.show', compact('gaArchiveData'));
-    }
-
-    public function qrcode($id)
-{
-    $gaArchiveData = GaArchiveData::find($id);
-
-    if (!$gaArchiveData) {
-        return abort(404, 'Data not found');
-    }
-
-    $unique_id = $gaArchiveData->unique_id;
-
-    if ($unique_id) {
-        // Gunakan backend default tanpa imagick (format PNG langsung dari GD)
-        $qrImage = QrCode::format('png')->size(300)->generate($unique_id);
-
-        return response($qrImage)
-            ->header('Content-Type', 'image/png')
-            ->header('Content-Disposition', 'attachment; filename="qrcode_' . Str::slug($unique_id) . '.png"');
-    }
-
-    Alert::error('Error','Data Tidak Di Temukan');
-    return redirect()->back();
-}
-    public function update(Request $request, GaArchiveData $gaArchiveData,$id)
+    public function update(Request $request, GaArchiveData $gaArchiveData, $id)
     {
         $gaArchiveData = GaArchiveData::find($id);
+
         $request->validate([
             'filling_number' => 'required',
             'cabinet_number' => 'required',
@@ -105,7 +127,7 @@ class GaArchiveDataController extends Controller
             'is_generate_qrcode' => 'nullable',
         ]);
 
-        $is_generate = $request->is_generate_qrcode !== '0' ? true : false;
+        $is_generate = $request->is_generate_qrcode !== '0';
 
         try {
             $data = [
@@ -116,18 +138,18 @@ class GaArchiveDataController extends Controller
                 'date' => $request->date,
                 'category' => $request->category,
                 'is_generate_qrcode' => $is_generate,
-                'unique_id' => $is_generate ?  uniqid('archive_') : '0',
+                'unique_id' => $is_generate ? uniqid('archive_') : '0',
             ];
 
             if ($request->hasFile('document_file')) {
                 $file = $request->file('document_file');
-                $fileName = 'documents/'. time() . '_' . $file->getClientOriginalName();
-                $file->storeAs($fileName, 'public');
+                $fileName = 'documents/' . time() . '_' . $file->getClientOriginalName();
+                $file->storeAs('documents', $fileName, 'public');
                 $data['document_file'] = $fileName;
             }
+
             $gaArchiveData->update($data);
-            
-            // dd($gaArchiveData);
+
             Alert::success('Berhasil', 'Data arsip berhasil diperbarui');
             return redirect()->route('ga-archive.index');
         } catch (\Exception $e) {

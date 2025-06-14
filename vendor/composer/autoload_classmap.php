@@ -18,6 +18,7 @@ return array(
     'App\\Http\\Controllers\\Auth\\VerifyEmailController' => $baseDir . '/app/Http/Controllers/Auth/VerifyEmailController.php',
     'App\\Http\\Controllers\\BejanaTekanController' => $baseDir . '/app/Http/Controllers/BejanaTekanController.php',
     'App\\Http\\Controllers\\Controller' => $baseDir . '/app/Http/Controllers/Controller.php',
+    'App\\Http\\Controllers\\DashboardController' => $baseDir . '/app/Http/Controllers/DashboardController.php',
     'App\\Http\\Controllers\\GaArchiveDataController' => $baseDir . '/app/Http/Controllers/GaArchiveDataController.php',
     'App\\Http\\Controllers\\GensetController' => $baseDir . '/app/Http/Controllers/GensetController.php',
     'App\\Http\\Controllers\\InstalasiHydrantController' => $baseDir . '/app/Http/Controllers/InstalasiHydrantController.php',

@@ -14,38 +14,97 @@
                 @csrf
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-                    {{-- User ID --}}
+                    {{-- NIK --}}
                     <div class="w-full">
-                        <x-form.label for="user_id" class="font-semibold py-1">Nama Pengguna</x-form.label>
-                        <x-form.select name="user_id" id="user_id" class="w-full">
-                            <option value="">Pilih Pengguna</option>
-                            @foreach ($users as $user)
-                                <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
-                                    {{ $user->name }}
-                                </option>
-                            @endforeach
-                        </x-form.select>
-                        <x-form.error :messages="$errors->get('user_id')" />
+                        <x-form.label for="nik" class="font-semibold py-1">NIK</x-form.label>
+                        <x-form.input
+                            type="text"
+                            name="nik"
+                            id="nik"
+                            value="{{ old('nik') }}"
+                            placeholder="Masukkan NIK"
+                            class="w-full"
+                        />
+                        <x-form.error :messages="$errors->get('nik')" />
+                    </div>
+
+                    {{-- Hidden user_id --}}
+                    <input type="hidden" name="user_id" id="user_id" value="{{ old('user_id') }}" />
+
+                    {{-- Nama --}}
+                    <div class="w-full">
+                        <x-form.label for="nama" class="font-semibold py-1">Nama</x-form.label>
+                        <x-form.input
+                            type="text"
+                            id="nama"
+                            name="nama"
+                            readonly
+                            class="w-full bg-gray-100 text-gray-700"
+                        />
+                    </div>
+
+                    {{-- Jabatan --}}
+                    <div class="w-full">
+                        <x-form.label for="jabatan" class="font-semibold py-1">Jabatan</x-form.label>
+                        <x-form.input
+                            type="text"
+                            id="jabatan"
+                            name="jabatan"
+                            readonly
+                            class="w-full bg-gray-100 text-gray-700"
+                        />
+                    </div>
+
+                    {{-- Departemen --}}
+                    <div class="w-full">
+                        <x-form.label for="departemen" class="font-semibold py-1">Departemen</x-form.label>
+                        <x-form.input
+                            type="text"
+                            id="departemen"
+                            name="departemen"
+                            readonly
+                            class="w-full bg-gray-100 text-gray-700"
+                        />
                     </div>
 
                     {{-- No Sertifikat --}}
                     <div class="w-full">
                         <x-form.label for="no_sertifikat" class="font-semibold py-1">Nomor Sertifikat</x-form.label>
-                        <x-form.input value="{{ old('no_sertifikat') }}" type="text" name="no_sertifikat" id="no_sertifikat" placeholder="Masukkan Nomor Sertifikat" class="w-full" />
+                        <x-form.input
+                            type="text"
+                            name="no_sertifikat"
+                            id="no_sertifikat"
+                            value="{{ old('no_sertifikat') }}"
+                            placeholder="Masukkan Nomor Sertifikat"
+                            class="w-full"
+                        />
                         <x-form.error :messages="$errors->get('no_sertifikat')" />
                     </div>
 
                     {{-- Jenis Sertifikat --}}
                     <div class="w-full">
                         <x-form.label for="jenis_sertifikat" class="font-semibold py-1">Jenis Sertifikat</x-form.label>
-                        <x-form.input value="{{ old('jenis_sertifikat') }}" type="text" name="jenis_sertifikat" id="jenis_sertifikat" placeholder="Masukkan Jenis Sertifikat" class="w-full" />
+                        <x-form.input
+                            type="text"
+                            name="jenis_sertifikat"
+                            id="jenis_sertifikat"
+                            value="{{ old('jenis_sertifikat') }}"
+                            placeholder="Masukkan Jenis Sertifikat"
+                            class="w-full"
+                        />
                         <x-form.error :messages="$errors->get('jenis_sertifikat')" />
                     </div>
 
                     {{-- Tanggal Berlaku --}}
                     <div class="w-full">
                         <x-form.label for="tanggal_berlaku" class="font-semibold py-1">Tanggal Berlaku</x-form.label>
-                        <x-form.input value="{{ old('tanggal_berlaku') }}" type="date" name="tanggal_berlaku" id="tanggal_berlaku" class="w-full" />
+                        <x-form.input
+                            type="date"
+                            name="tanggal_berlaku"
+                            id="tanggal_berlaku"
+                            value="{{ old('tanggal_berlaku') }}"
+                            class="w-full"
+                        />
                         <x-form.error :messages="$errors->get('tanggal_berlaku')" />
                     </div>
                 </div>
@@ -58,4 +117,35 @@
             </form>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Data users dari backend ke JS
+            const users = @json($users);
+
+            const nikInput = document.getElementById('nik');
+            const userIdInput = document.getElementById('user_id');
+            const namaInput = document.getElementById('nama');
+            const jabatanInput = document.getElementById('jabatan');
+            const departemenInput = document.getElementById('departemen');
+
+            nikInput.addEventListener('blur', function () {
+                const nik = this.value.trim();
+                const user = users.find(u => u.nik === nik);
+
+                if (user) {
+                    userIdInput.value = user.id;    
+                    namaInput.value = user.name || '';
+                    jabatanInput.value = user.jabatan || '';
+                    departemenInput.value = user.departemen || '';
+                } else {
+                    userIdInput.value = '';
+                    namaInput.value = '';
+                    jabatanInput.value = '';
+                    departemenInput.value = '';
+                    alert('User dengan NIK tersebut tidak ditemukan!');
+                }
+            });
+        });
+    </script>
 </x-app-layout>

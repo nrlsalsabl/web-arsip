@@ -19,8 +19,10 @@ class SuratIzinOperatorController extends Controller
 
     public function create()
     {   
-        $users = User::all();
-        return view('pages.suratIzinOperator.create',compact('users'));
+        // $users = User::all();
+        // return view('pages.suratIzinOperator.create',compact('users'));
+        $users = User::select('id', 'nik', 'name', 'jabatan', 'departemen')->get();
+        return view('surat-izin-operator.create', compact('users'));
     }
 
     public function store(Request $request)
@@ -71,10 +73,11 @@ class SuratIzinOperatorController extends Controller
     }
 
     public function edit(SuratIzinOperator $suratIzinOperator)
-    {   
-        $users = User::all();
-        return view('pages.suratIzinOperator.edit', compact('suratIzinOperator','users'));
+    {
+        $users = User::select('id', 'nik', 'name', 'jabatan', 'departemen')->get();
+        return view('pages.suratIzinOperator.edit', compact('suratIzinOperator', 'users'));
     }
+
 
     public function update(Request $request, SuratIzinOperator $suratIzinOperator)
     {
