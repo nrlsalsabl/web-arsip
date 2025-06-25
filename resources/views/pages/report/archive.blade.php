@@ -1,117 +1,91 @@
 <x-app-layout>
     <x-slot name="header">
-        {{-- <h2 class="font-semibold text-xl leading-tight">
-            {{ __('Profile') }}
-        </h2> --}}
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-white leading-tight">
+            {{ __('Laporan Arsip') }}
+        </h2>
     </x-slot>
-    <x-breadcrumb title="Vendor" :items="[
-    ['label' => 'Report', 'url' => route('dashboard')],
-    ['label' => 'Data Master']
-]" />
+
+    <x-breadcrumb title="Laporan Arsip" :items="[
+        ['label' => 'Report', 'url' => route('dashboard')],
+        ['label' => 'Data Arsip']
+    ]" />
 
     <div class="space-y-6">
-        <div class="p-0 sm:p-8 bg-white shadow sm:rounded-lg dark:bg-gray-800">
-            <div class="flex mb-4">
+        <div class="p-4 sm:p-6 bg-white shadow sm:rounded-lg dark:bg-gray-800">
+            <div class="flex justify-between mb-4">
                 <div>
-                    {{-- filter --}}
-                   <form action="{{ route('report.archive') }}" method="GET" class="flex items-center gap-3">
-                    @csrf
-                    <div class="w-full">
-                        <x-form.label class="font-semibold py-1" for="category">Categori</x-form.label>
-                        <x-form.select class="w-[200px]" name="category" id="category">
-                            <option value="">Pilih status</option>
-                            <option value="ga-archive">Ga Archive</option>
-                            <option value="vendor-archive">Vendor Archive</option>
-                        </x-form.select>
-                        <x-form.error :messages="$errors->get('category')" />
-                    </div>
-                    <div class="w-full">
-                        <x-form.label class="font-semibold py-1" for="status">Cabinet Number</x-form.label>
-                        <x-form.select class="w-[200px]" name="cabinet_number" id="cabinet_number">
-                            <option value="">Pilih cabinet_number</option>
-                            {{-- Option akan diisi via JavaScript --}}
-                        </x-form.select>                        
-                        <x-form.error :messages="$errors->get('cabinet_number')" />
-                    </div>
-                    <div class="w-full pt-6">
-                        <x-button
-                            type="submit"
-                        variant="primary"
-                        size="base"
-                        class="items-center max-w-xs gap-2"
-                    >
-                        <span>Filter</span>
-                    </x-button>
-                    </div>
-                   </form>
+                    <x-button href="?export=excel" variant="success">Download Excel</x-button>
+                </div>
+                <div>
+                    <x-button href="?export=pdf" variant="danger">Download PDF</x-button>
                 </div>
             </div>
-            <div class="relative overflow-x-auto">
-                <table class="min-w-full table-fixed text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                    <thead class="text-sm text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-400">
+
+            {{-- GA Archive Table --}}
+            <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2">GA Archive</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full table-auto border border-gray-300 dark:border-gray-600">
+                    <thead class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-white">
                         <tr>
-                            <th scope="col" class="px-2 py-3 w-[50px] text-center">
-                                No
-                            </th>
-                            <th scope="col" class="px-6 py-3">
-                                Kategori
-                            </th>
-                            <th scope="col" class="px-6 py-3">
-                                Cabinet Number
-                            </th>
+                            <th class="px-4 py-2 border">No</th>
+                            <th class="px-4 py-2 border">Filling Number</th>
+                            <th class="px-4 py-2 border">Cabinet Number</th>
+                            <th class="px-4 py-2 border">Document Name</th>
+                            <th class="px-4 py-2 border">Date</th>
+                            <th class="px-4 py-2 border">Category</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($data as $item)
-                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-                            <th scope="row" class="px-2 py-4 font-medium text-center text-gray-900 dark:text-white w-[50px]">
-                                {{ $loop->iteration }}
-                            </th>
-                            <td class="px-6 py-4">
-                                {{ $categoryName }}
-                            </td>
-                            <td class="px-6 py-4">
-                                {{ $item->cabinet_number }}
-                            </td>
+                        @forelse($gaData as $i => $item)
+                        <tr class="bg-white dark:bg-gray-900">
+                            <td class="px-4 py-2 border">{{ $i + 1 }}</td>
+                            <td class="px-4 py-2 border">{{ $item->filling_number }}</td>
+                            <td class="px-4 py-2 border">{{ $item->cabinet_number }}</td>
+                            <td class="px-4 py-2 border">{{ $item->document_name }}</td>
+                            <td class="px-4 py-2 border">{{ $item->date }}</td>
+                            <td class="px-4 py-2 border">{{ $item->category }}</td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="10" class="px-6 text-center py-4">
-                                Tidak ada Data
-                            </td>
+                            <td colspan="6" class="px-4 py-2 border text-center">Tidak ada data GA Archive</td>
                         </tr>
                         @endforelse
                     </tbody>
                 </table>
-                
+            </div>
+
+            {{-- Vendor Archive Table --}}
+            <h3 class="text-lg font-bold text-gray-800 dark:text-white mt-8 mb-2">Vendor Archive</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full table-auto border border-gray-300 dark:border-gray-600">
+                    <thead class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-white">
+                        <tr>
+                            <th class="px-4 py-2 border">No</th>
+                            <th class="px-4 py-2 border">Filling Number</th>
+                            <th class="px-4 py-2 border">Cabinet Number</th>
+                            <th class="px-4 py-2 border">Document Number</th>
+                            <th class="px-4 py-2 border">Date</th>
+                            <th class="px-4 py-2 border">Company</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($vendorData as $i => $item)
+                        <tr class="bg-white dark:bg-gray-900">
+                            <td class="px-4 py-2 border">{{ $i + 1 }}</td>
+                            <td class="px-4 py-2 border">{{ $item->filling_number }}</td>
+                            <td class="px-4 py-2 border">{{ $item->cabinet_number }}</td>
+                            <td class="px-4 py-2 border">{{ $item->document_number }}</td>
+                            <td class="px-4 py-2 border">{{ $item->date }}</td>
+                            <td class="px-4 py-2 border">{{ $item->company_name }}</td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="6" class="px-4 py-2 border text-center">Tidak ada data Vendor Archive</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-
 </x-app-layout>
-<script>
-
- $('#category').on('change', function () {
-        const category = $(this).val();
-
-        // Clear dropdown dulu
-        $('#cabinet_number').html('<option value="">Loading...</option>');
-
-        $.ajax({
-            url: "{{ route('get.cabinet.number') }}", // Buat route ini
-            type: "GET",
-            data: { category: category },
-            success: function (data) {
-                let options = '<option value="">Pilih cabinet_number</option>';
-                data.forEach(function (item) {
-                    options += `<option value="${item.cabinet_number}">${item.cabinet_number}</option>`;
-                });
-                $('#cabinet_number').html(options);
-            },
-            error: function () {
-                $('#cabinet_number').html('<option value="">Gagal memuat data</option>');
-            }
-        });
-    });
-
-</script>

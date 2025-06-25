@@ -17,6 +17,14 @@ use App\Http\Controllers\SuratIzinOperatorController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VendorArchiveDataController;
 use App\Http\Controllers\VendorFormController;
+use App\Models\BejanaTekan;
+use App\Models\Genset;
+use App\Models\InstalasiHydrant;
+use App\Models\InstalasiListrik;
+use App\Models\KetelUap;
+use App\Models\LainLain;
+use App\Models\PenyalurPetir;
+use App\Models\SuratIzinOperator;
 use RealRashid\SweetAlert\Facades\Alert;
 
 /*
@@ -86,11 +94,17 @@ Route::middleware('auth')->group(function () {
     Route::resource('vendor-form', VendorFormController::class);
     Route::get('vendor-form/{id}/cetak', [VendorFormController::class, 'cetak'])->name('vendor-form.cetak');
 
-    Route::resource('report', ReportController::class);
+    // Route::resource('report', ReportController::class);
+    Route::get('/report/archive', [ReportController::class, 'archive'])->name('report.archive');
+
     Route::get('/report/datamaster', [ReportController::class, 'datamaster'])->name('report.data-master');
     Route::get('/report/archive-data', [ReportController::class, 'archive'])->name('report.archive');
     Route::get('/report/cabinet_number', [ReportController::class, 'getCabinetNumber'])->name('get.cabinet.number');
 
+    Route::get('/report/archive/export/excel', [ReportController::class, 'exportExcel'])->name('report.archive.export.excel');
+    Route::get('/report/archive/export/pdf', [ReportController::class, 'exportPdf'])->name('report.archive.export.pdf');
+
+    
     // Settings Routes
     Route::get('/setting', [SettingController::class, 'index'])->name('setting.index');
     Route::post('/setting', [SettingController::class, 'update'])->name('setting.update');
@@ -125,3 +139,19 @@ Route::get('/buttons/text-icon', function () {
 
 // Auth Routes (Login, Register, etc.)
 require __DIR__ . '/auth.php';
+
+
+
+
+//     Route::get('/debug-fields', function () {
+//     return response()->json([
+//         'BejanaTekan' => BejanaTekan::first()?->toArray(),
+//         'InstalasiHydrant' => InstalasiHydrant::first()?->toArray(),
+//         'InstalasiListrik' => InstalasiListrik::first()?->toArray(),
+//         'Genset' => Genset::first()?->toArray(),
+//         'KetelUap' => KetelUap::first()?->toArray(),
+//         'PenyalurPetir' => PenyalurPetir::first()?->toArray(),
+//         'SuratIzinOperator' => SuratIzinOperator::first()?->toArray(),
+//         'LainLain' => LainLain::first()?->toArray(),
+//     ]);
+//     });

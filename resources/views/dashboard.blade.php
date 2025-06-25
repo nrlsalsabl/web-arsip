@@ -19,12 +19,12 @@
 
 
     <div class="mt-8 bg-white rounded shadow dark:bg-gray-800 p-4" style="width: 600px;">
-        <h3 class="text-lg font-semibold mb-4">Top 5 Dokumen GA Archive yang Sering Diakses</h3>
+        <h3 class="text-lg font-semibold mb-4">Dokumen GA Archive yang Sering Diakses</h3>
         <canvas id="barChartGaArchive"></canvas>
     </div>
 
     <div class="mt-8 bg-white rounded shadow dark:bg-gray-800 p-4" style="width: 600px;">
-        <h3 class="text-lg font-semibold mb-4">Top 5 Dokumen Vendor Archive yang Sering Diakses</h3>
+        <h3 class="text-lg font-semibold mb-4">Dokumen Vendor Archive yang Sering Diakses</h3>
         <canvas id="barChartVendorArchive"></canvas>
     </div>
 

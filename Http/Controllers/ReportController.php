@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\BejanaTekan;
-use App\Models\GaArchiveData;
+
+use App\Models\{GaArchiveData, VendorArchiveData};
 use App\Models\User;
-use App\Models\VendorArchiveData;
+
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
-use RealRashid\SweetAlert\Facades\Alert;
+
+use App\Exports\ArchiveExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ReportController extends Controller
 {
@@ -22,39 +25,27 @@ class ReportController extends Controller
     }
 
 
-    public function archive(Request $request){
-        $category = $request->input('category') ? $request->input('category') :  'ga-archive';
-        $cabinet_number = $request->input('cabinet_number');
-        
-        
-        // Peta kategori ke nama model
-        $modelMap = [
-            'ga-archive' => \App\Models\GaArchiveData::class,
-            'vendor-archive' => \App\Models\VendorArchiveData::class,
-        ];
-        
-        // Peta kategori ke nama tampilan
-        $categoryNameMap = [
-            'ga-archive' => 'Ga Archive',
-            'vendor-archive' => 'Vendor Archive',
-        ];
-        
-        if (!isset($modelMap[$category])) {
-            return redirect()->back()->with('error', 'Kategori tidak valid.');
+    public function archive(Request $request)
+    {
+        $gaData = GaArchiveData::latest()->get();
+        $vendorData = VendorArchiveData::latest()->get();
+
+        if ($request->input('export') === 'excel') {
+            return Excel::download(new ArchiveExport($gaData, $vendorData), 'arsip.xlsx');
         }
-    
-        $model = $modelMap[$category];
-        $query = $model::query();
-    
-        if ($cabinet_number) {
-            $query->where('cabinet_number', $cabinet_number);
+
+        if ($request->input('export') === 'pdf') {
+            $pdf = Pdf::loadView('pages.report.print.archive-pdf', [
+                'gaData' => $gaData,
+                'vendorData' => $vendorData,
+            ]);
+            return $pdf->download('arsip.pdf');
         }
-    
-        $data = $query->get();
-        $categoryName = $categoryNameMap[$category];
-    
-        return view('pages.report.archive', compact('data', 'categoryName', 'category', 'cabinet_number'));
+
+        return view('pages.report.archive', compact('gaData', 'vendorData'));
     }
+
+
 
     public function getCabinetNumber(Request $request)
 {
@@ -142,6 +133,19 @@ class ReportController extends Controller
 
         return view('pages.report.dataMaster', compact('data', 'categoryName', 'category', 'status'));
     }
+
+public function exportExcel()
+{
+    return Excel::download(new ArchiveExport, 'archive-report.xlsx');
+}
+
+public function exportPdf()
+{
+    $gaData = \App\Models\GaArchiveData::all();
+    $vendorData = \App\Models\VendorArchiveData::all();
+    $pdf = Pdf::loadView('pages.report.exports.archive-pdf', compact('gaData', 'vendorData'));
+    return $pdf->download('archive-report.pdf');
+}
     
 
 
