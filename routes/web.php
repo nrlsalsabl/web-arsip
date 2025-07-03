@@ -94,6 +94,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('vendor-form', VendorFormController::class);
     Route::get('vendor-form/{id}/cetak', [VendorFormController::class, 'cetak'])->name('vendor-form.cetak');
 
+    Route::resource('archive-loan', \App\Http\Controllers\ArchiveLoanController::class);
+
     // Route::resource('report', ReportController::class);
     Route::get('/report/archive', [ReportController::class, 'archive'])->name('report.archive');
 
@@ -123,6 +125,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+
 
 // Useless Routes (for demonstration only)
 Route::get('/buttons/text', function () {
